@@ -1,26 +1,70 @@
 module Picshare exposing (main)
 
-import Html exposing (Html, div, h1, h2, img, text)
+import Html exposing (Html, div, h1, h2, img, text, i)
 import Html.Attributes exposing (class, href, src)
+import Html.Events exposing (onClick)
+import Browser
 
 
-viewPhoto : String -> String -> Html msg
-viewPhoto filename caption =
+type alias Photo =
+    { url : String
+    , caption : String
+    , liked : Bool
+    }
+
+type Msg
+    = Like
+    | Unlike
+
+initialModel : Photo
+initialModel = 
+    { url = "https://programming-elm.com/1.jpg"
+    , caption = "Surfing"
+    , liked = False
+    }
+
+update : Msg -> Photo -> Photo
+update msg model =
+    case msg of
+        Like -> { model | liked = True }
+        Unlike -> { model | liked = False }
+
+
+viewPhoto : Photo -> Html Msg
+viewPhoto model =
+    let
+        buttonClass = if model.liked then "fa-heart" else "fa-heart-o"
+        msg = if model.liked then Unlike else Like
+    in
     div [ class "detailed-photo" ]
-        [ img [ src ("https://programming-elm.com/" ++ filename) ] []
+        [ img [ src model.url ] []
         , div [ class "photo-info" ]
-            [ h2 [ class "caption" ] [ text caption ] ]
+            [ div [ class "like-button"]
+                [ i
+                    [ class "fa fa-2x"
+                    , class buttonClass
+                    , onClick msg
+                    ]
+                    []
+            ]
+            ]
+            , h2 [ class "caption" ] [ text model.caption ]
         ]
 
 
-main : Html msg
-main =
+view : Photo -> Html Msg
+view model =
     div []
         [ div [ class "header" ]
             [ h1 [] [ text "Picshare" ] ]
         , div [ class "content-flow" ]
-            [ viewPhoto "1.jpg" "Surfing"
-            , viewPhoto "2.jpg" "The Fox"
-            , viewPhoto "3.jpg" "Evening"
-            ]
+            [ viewPhoto model ]
         ]
+
+main : Program () Photo Msg
+main =
+  Browser.sandbox 
+    { init = initialModel
+    , view = view
+    , update = update
+    }
