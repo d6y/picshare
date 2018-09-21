@@ -1,9 +1,9 @@
 module Picshare exposing (main)
 
-import Html exposing (Html, div, h1, h2, img, text, i)
+import Browser
+import Html exposing (Html, div, h1, h2, i, img, text)
 import Html.Attributes exposing (class, href, src)
 import Html.Events exposing (onClick)
-import Browser
 
 
 type alias Photo =
@@ -12,43 +12,60 @@ type alias Photo =
     , liked : Bool
     }
 
+
 type Msg
     = Like
     | Unlike
 
+
 initialModel : Photo
-initialModel = 
+initialModel =
     { url = "https://programming-elm.com/1.jpg"
     , caption = "Surfing"
     , liked = False
     }
 
+
 update : Msg -> Photo -> Photo
 update msg model =
     case msg of
-        Like -> { model | liked = True }
-        Unlike -> { model | liked = False }
+        Like ->
+            { model | liked = True }
+
+        Unlike ->
+            { model | liked = False }
 
 
 viewPhoto : Photo -> Html Msg
 viewPhoto model =
     let
-        buttonClass = if model.liked then "fa-heart" else "fa-heart-o"
-        msg = if model.liked then Unlike else Like
+        buttonClass =
+            if model.liked then
+                "fa-heart"
+
+            else
+                "fa-heart-o"
+
+        msg =
+            if model.liked then
+                Unlike
+
+            else
+                Like
     in
     div [ class "detailed-photo" ]
         [ img [ src model.url ] []
         , div [ class "photo-info" ]
-            [ div [ class "like-button"]
+            [ div [ class "like-button" ]
                 [ i
                     [ class "fa fa-2x"
                     , class buttonClass
                     , onClick msg
                     ]
                     []
+                ]
             ]
-            ]
-            , h2 [ class "caption" ] [ text model.caption ]
+        , h2 [ class "caption" ] [ text model.caption ]
         ]
 
 
@@ -61,10 +78,11 @@ view model =
             [ viewPhoto model ]
         ]
 
+
 main : Program () Photo Msg
 main =
-  Browser.sandbox 
-    { init = initialModel
-    , view = view
-    , update = update
-    }
+    Browser.sandbox
+        { init = initialModel
+        , view = view
+        , update = update
+        }
