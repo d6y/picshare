@@ -4,11 +4,10 @@ import Browser
 import Html exposing (Html, button, div, form, h1, h2, i, img, input, li, strong, text, ul)
 import Html.Attributes exposing (class, disabled, href, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
-
+import Http
 import Json.Decode exposing (Decoder, bool, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 
-import Http
 
 type alias Id =
     Int
@@ -23,14 +22,16 @@ type alias Photo =
     , newComment : String
     }
 
+
 type alias Model =
-    { photo: Maybe Photo
+    { photo : Maybe Photo
     }
 
 
 photoDecoder : Decoder Photo
 photoDecoder =
-    succeed Photo -- nb Photo here is a constructor, not the type alias
+    succeed Photo
+        -- nb Photo here is a constructor, not the type alias
         |> required "id" int
         |> required "url" string
         |> required "caption" string
@@ -38,50 +39,59 @@ photoDecoder =
         |> required "comments" (list string)
         |> hardcoded ""
 
+
 type Msg
     = ToggleLike
     | UpdateComment String
     | SaveComment
     | LoadFeed (Result Http.Error Photo)
 
-baseUrl = "https://programming-elm.com/"
+
+baseUrl =
+    "https://programming-elm.com/"
+
 
 fetchFeed : Cmd Msg
 fetchFeed =
     Http.get (baseUrl ++ "feed/1") photoDecoder
         |> Http.send LoadFeed
 
+
 placeholderPhoto : Photo
 placeholderPhoto =
-        { id = 1
-        , url = "https://placeimg.com/640/480/nature"
-        , caption = "Nature"
-        , liked = False
-        , comments = [ "Wow" ]
-        , newComment = ""
-        }
+    { id = 1
+    , url = "https://placeimg.com/640/480/nature"
+    , caption = "Nature"
+    , liked = False
+    , comments = [ "Wow" ]
+    , newComment = ""
+    }
+
 
 initialModel : Model
 initialModel =
     { photo = Nothing
     }
 
-init : () -> (Model, Cmd Msg)
+
+init : () -> ( Model, Cmd Msg )
 init () =
-  ( initialModel, fetchFeed )
+    ( initialModel, fetchFeed )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.none
 
-update : Msg -> Model -> (Model, Cmd Msg)
+
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         LoadFeed (Ok photo) ->
-            ( { model | photo = Just photo }, Cmd.none)
-        
+            ( { model | photo = Just photo }, Cmd.none )
+
         LoadFeed (Err _) ->
-            (model, Cmd.none)
+            ( model, Cmd.none )
 
         ToggleLike ->
             ( { model | photo = updateFeed toggleLike model.photo }
@@ -101,15 +111,18 @@ update msg model =
 
 toggleLike : Photo -> Photo
 toggleLike photo =
-  { photo | liked = not photo.liked }
+    { photo | liked = not photo.liked }
+
 
 updateComment : String -> Photo -> Photo
 updateComment comment photo =
     { photo | newComment = comment }
 
-updateFeed: (Photo -> Photo) -> Maybe Photo -> Maybe Photo
+
+updateFeed : (Photo -> Photo) -> Maybe Photo -> Maybe Photo
 updateFeed updatePhoto maybePhoto =
     Maybe.map updatePhoto maybePhoto
+
 
 saveNewComment : Photo -> Photo
 saveNewComment photo =
@@ -123,6 +136,7 @@ saveNewComment photo =
                 , newComment = ""
             }
 
+
 viewFeed : Maybe Photo -> Html Msg
 viewFeed maybePhoto =
     case maybePhoto of
@@ -131,7 +145,8 @@ viewFeed maybePhoto =
 
         Nothing ->
             div [ class "loading-feed" ]
-                [text "Loading feed..."]
+                [ text "Loading feed..." ]
+
 
 viewLoveButton : Photo -> Html Msg
 viewLoveButton model =
