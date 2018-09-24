@@ -1,56 +1,137 @@
-module Picshare exposing (main)
+module Picshare exposing (main, photoDecoder)
 
 import Browser
 import Html exposing (Html, button, div, form, h1, h2, i, img, input, li, strong, text, ul)
 import Html.Attributes exposing (class, disabled, href, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 
+import Json.Decode exposing (Decoder, bool, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
+
+import Http
+
+type alias Id =
+    Int
+
 
 type alias Photo =
-    { url : String
+    { id : Id
+    , url : String
     , caption : String
     , liked : Bool
     , comments : List String
     , newComment : String
     }
 
+type alias Model =
+    { photo: Maybe Photo
+    }
+
+
+photoDecoder : Decoder Photo
+photoDecoder =
+    succeed Photo -- nb Photo here is a constructor, not the type alias
+        |> required "id" int
+        |> required "url" string
+        |> required "caption" string
+        |> required "liked" bool
+        |> required "comments" (list string)
+        |> hardcoded ""
 
 type Msg
     = ToggleLike
     | UpdateComment String
     | SaveComment
+    | LoadFeed (Result Http.Error Photo)
 
+baseUrl = "https://programming-elm.com/"
 
-initialModel : Photo
+fetchFeed : Cmd Msg
+fetchFeed =
+    Http.get (baseUrl ++ "feed/1") photoDecoder
+        |> Http.send LoadFeed
+
+placeholderPhoto : Photo
+placeholderPhoto =
+        { id = 1
+        , url = "https://placeimg.com/640/480/nature"
+        , caption = "Nature"
+        , liked = False
+        , comments = [ "Wow" ]
+        , newComment = ""
+        }
+
+initialModel : Model
 initialModel =
-    { url = "https://placeimg.com/640/480/nature"
-    , caption = "Nature"
-    , liked = False
-    , comments = [ "Wow" ]
-    , newComment = ""
+    { photo = Nothing
     }
 
+init : () -> (Model, Cmd Msg)
+init () =
+  ( initialModel, fetchFeed )
 
-update : Msg -> Photo -> Photo
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
+
+update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
     case msg of
+        LoadFeed (Ok photo) ->
+            ( { model | photo = Just photo }, Cmd.none)
+        
+        LoadFeed (Err _) ->
+            (model, Cmd.none)
+
         ToggleLike ->
-            { model | liked = not model.liked }
+            ( { model | photo = updateFeed toggleLike model.photo }
+            , Cmd.none
+            )
 
         UpdateComment comment ->
-            { model | newComment = comment }
+            ( { model | photo = updateFeed (updateComment comment) model.photo }
+            , Cmd.none
+            )
 
         SaveComment ->
-            case String.trim model.newComment of
-                "" ->
-                    model
+            ( { model | photo = updateFeed saveNewComment model.photo }
+            , Cmd.none
+            )
 
-                comment ->
-                    { model
-                        | comments = model.comments ++ [ comment ]
-                        , newComment = ""
-                    }
 
+toggleLike : Photo -> Photo
+toggleLike photo =
+  { photo | liked = not photo.liked }
+
+updateComment : String -> Photo -> Photo
+updateComment comment photo =
+    { photo | newComment = comment }
+
+updateFeed: (Photo -> Photo) -> Maybe Photo -> Maybe Photo
+updateFeed updatePhoto maybePhoto =
+    Maybe.map updatePhoto maybePhoto
+
+saveNewComment : Photo -> Photo
+saveNewComment photo =
+    case String.trim photo.newComment of
+        "" ->
+            photo
+
+        comment ->
+            { photo
+                | comments = photo.comments ++ [ comment ]
+                , newComment = ""
+            }
+
+viewFeed : Maybe Photo -> Html Msg
+viewFeed maybePhoto =
+    case maybePhoto of
+        Just photo ->
+            viewPhoto photo
+
+        Nothing ->
+            div [ class "loading-feed" ]
+                [text "Loading feed..."]
 
 viewLoveButton : Photo -> Html Msg
 viewLoveButton model =
@@ -122,20 +203,21 @@ viewPhoto model =
         ]
 
 
-view : Photo -> Html Msg
+view : Model -> Html Msg
 view model =
     div []
         [ div [ class "header" ]
             [ h1 [] [ text "Picshare" ] ]
         , div [ class "content-flow" ]
-            [ viewPhoto model ]
+            [ viewFeed model.photo ]
         ]
 
 
-main : Program () Photo Msg
+main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = initialModel
+    Browser.element
+        { init = init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
