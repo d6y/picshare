@@ -4290,37 +4290,7 @@ function _Browser_load(url)
 	}));
 }
 var elm$core$Basics$False = {$: 'False'};
-var author$project$Picshare$initialModel = {caption: 'Surfing', liked: false, url: 'https://programming-elm.com/1.jpg'};
-var elm$core$Basics$True = {$: 'True'};
-var author$project$Picshare$update = F2(
-	function (msg, model) {
-		if (msg.$ === 'Like') {
-			return _Utils_update(
-				model,
-				{liked: true});
-		} else {
-			return _Utils_update(
-				model,
-				{liked: false});
-		}
-	});
-var author$project$Picshare$Like = {$: 'Like'};
-var author$project$Picshare$Unlike = {$: 'Unlike'};
-var elm$core$Basics$identity = function (x) {
-	return x;
-};
-var elm$core$Result$isOk = function (result) {
-	if (result.$ === 'Ok') {
-		return true;
-	} else {
-		return false;
-	}
-};
-var elm$core$Array$branchFactor = 32;
-var elm$core$Array$Array_elm_builtin = F4(
-	function (a, b, c, d) {
-		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
-	});
+var author$project$Picshare$initialModel = {caption: 'Nature', liked: false, url: 'https://placeimg.com/640/480/nature'};
 var elm$core$Basics$EQ = {$: 'EQ'};
 var elm$core$Basics$GT = {$: 'GT'};
 var elm$core$Basics$LT = {$: 'LT'};
@@ -4401,6 +4371,30 @@ var elm$core$Array$foldr = F3(
 var elm$core$Array$toList = function (array) {
 	return A3(elm$core$Array$foldr, elm$core$List$cons, _List_Nil, array);
 };
+var elm$core$Basics$not = _Basics_not;
+var author$project$Picshare$update = F2(
+	function (msg, model) {
+		return _Utils_update(
+			model,
+			{liked: !model.liked});
+	});
+var author$project$Picshare$ToggleLike = {$: 'ToggleLike'};
+var elm$core$Basics$identity = function (x) {
+	return x;
+};
+var elm$core$Basics$True = {$: 'True'};
+var elm$core$Result$isOk = function (result) {
+	if (result.$ === 'Ok') {
+		return true;
+	} else {
+		return false;
+	}
+};
+var elm$core$Array$branchFactor = 32;
+var elm$core$Array$Array_elm_builtin = F4(
+	function (a, b, c, d) {
+		return {$: 'Array_elm_builtin', a: a, b: b, c: c, d: d};
+	});
 var elm$core$Basics$ceiling = _Basics_ceiling;
 var elm$core$Basics$fdiv = _Basics_fdiv;
 var elm$core$Basics$logBase = F2(
@@ -4798,11 +4792,7 @@ var elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 	}
 };
 var elm$html$Html$div = _VirtualDom_node('div');
-var elm$html$Html$h2 = _VirtualDom_node('h2');
 var elm$html$Html$i = _VirtualDom_node('i');
-var elm$html$Html$img = _VirtualDom_node('img');
-var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
-var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
 var elm$json$Json$Encode$string = _Json_wrap;
 var elm$html$Html$Attributes$stringProperty = F2(
 	function (key, string) {
@@ -4812,12 +4802,6 @@ var elm$html$Html$Attributes$stringProperty = F2(
 			elm$json$Json$Encode$string(string));
 	});
 var elm$html$Html$Attributes$class = elm$html$Html$Attributes$stringProperty('className');
-var elm$html$Html$Attributes$src = function (url) {
-	return A2(
-		elm$html$Html$Attributes$stringProperty,
-		'src',
-		_VirtualDom_noJavaScriptOrHtmlUri(url));
-};
 var elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -4835,9 +4819,38 @@ var elm$html$Html$Events$onClick = function (msg) {
 		'click',
 		elm$json$Json$Decode$succeed(msg));
 };
-var author$project$Picshare$viewPhoto = function (model) {
-	var msg = model.liked ? author$project$Picshare$Unlike : author$project$Picshare$Like;
+var author$project$Picshare$viewLoveButton = function (model) {
 	var buttonClass = model.liked ? 'fa-heart' : 'fa-heart-o';
+	return A2(
+		elm$html$Html$div,
+		_List_fromArray(
+			[
+				elm$html$Html$Attributes$class('like-button')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				elm$html$Html$i,
+				_List_fromArray(
+					[
+						elm$html$Html$Attributes$class('fa fa-2x'),
+						elm$html$Html$Attributes$class(buttonClass),
+						elm$html$Html$Events$onClick(author$project$Picshare$ToggleLike)
+					]),
+				_List_Nil)
+			]));
+};
+var elm$html$Html$h2 = _VirtualDom_node('h2');
+var elm$html$Html$img = _VirtualDom_node('img');
+var elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var elm$html$Html$text = elm$virtual_dom$VirtualDom$text;
+var elm$html$Html$Attributes$src = function (url) {
+	return A2(
+		elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var author$project$Picshare$viewPhoto = function (model) {
 	return A2(
 		elm$html$Html$div,
 		_List_fromArray(
@@ -4861,24 +4874,7 @@ var author$project$Picshare$viewPhoto = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A2(
-						elm$html$Html$div,
-						_List_fromArray(
-							[
-								elm$html$Html$Attributes$class('like-button')
-							]),
-						_List_fromArray(
-							[
-								A2(
-								elm$html$Html$i,
-								_List_fromArray(
-									[
-										elm$html$Html$Attributes$class('fa fa-2x'),
-										elm$html$Html$Attributes$class(buttonClass),
-										elm$html$Html$Events$onClick(msg)
-									]),
-								_List_Nil)
-							]))
+						author$project$Picshare$viewLoveButton(model)
 					])),
 				A2(
 				elm$html$Html$h2,

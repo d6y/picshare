@@ -14,14 +14,13 @@ type alias Photo =
 
 
 type Msg
-    = Like
-    | Unlike
+    = ToggleLike
 
 
 initialModel : Photo
 initialModel =
-    { url = "https://programming-elm.com/1.jpg"
-    , caption = "Surfing"
+    { url = "https://placeimg.com/640/480/nature"
+    , caption = "Nature"
     , liked = False
     }
 
@@ -29,42 +28,32 @@ initialModel =
 update : Msg -> Photo -> Photo
 update msg model =
     case msg of
-        Like ->
-            { model | liked = True }
+        ToggleLike ->
+            { model | liked = not model.liked }
 
-        Unlike ->
-            { model | liked = False }
-
-
-viewPhoto : Photo -> Html Msg
-viewPhoto model =
+viewLoveButton : Photo -> Html Msg
+viewLoveButton model =
     let
         buttonClass =
             if model.liked then
                 "fa-heart"
-
             else
                 "fa-heart-o"
-
-        msg =
-            if model.liked then
-                Unlike
-
-            else
-                Like
     in
+    div [ class "like-button" ]
+        [ i
+            [ class "fa fa-2x"
+            , class buttonClass
+            , onClick ToggleLike
+            ]
+            []
+        ]
+
+viewPhoto : Photo -> Html Msg
+viewPhoto model =
     div [ class "detailed-photo" ]
         [ img [ src model.url ] []
-        , div [ class "photo-info" ]
-            [ div [ class "like-button" ]
-                [ i
-                    [ class "fa fa-2x"
-                    , class buttonClass
-                    , onClick msg
-                    ]
-                    []
-                ]
-            ]
+        , div [ class "photo-info" ] [ viewLoveButton model ]
         , h2 [ class "caption" ] [ text model.caption ]
         ]
 
